@@ -14,9 +14,6 @@ importers:
       '@pulumi/aws':
         specifier: ^6.45.0
         version: 6.45.0(typescript@5.5.3)
-      '@pulumi/pulumi':
-        specifier: ^3.125.0
-        version: 3.125.0(typescript@5.5.3)
     devDependencies:
       typescript:
         specifier: ^5.5.3

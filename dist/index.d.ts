@@ -1,1 +1,1 @@
-export * as secrets from "./secrets";
+export * as secretsManager from "./secretsManager";

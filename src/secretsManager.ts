@@ -1,6 +1,5 @@
 import { Item, item, validateCli } from "@1password/op-js";
 import * as aws from "@pulumi/aws";
-import * as pulumi from "@pulumi/pulumi";
 
 type GetPasswordManagerDataParams = {
   vault: string;
