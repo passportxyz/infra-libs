@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "Running pre-commit hook"
+echo "Building the project..."
+npx tsc && git add dist
