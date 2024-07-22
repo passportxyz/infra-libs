@@ -2,8 +2,10 @@
   "name": "infra-libs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
+    "setup": "git config core.hooksPath hooks",
     "build": "tsc"
   },
   "keywords": [],
@@ -11,5 +13,9 @@
   "license": "ISC",
   "devDependencies": {
     "typescript": "^5.5.3"
+  },
+  "dependencies": {
+    "@1password/op-js": "^0.1.13",
+    "@pulumi/aws": "^6.45.0"
   }
 }
