@@ -26,6 +26,8 @@ export const syncSecretsAndGetRefs = (
 ): SecretRef[] => {
   const { targetSecretArn, ...passwordManagerParams } = params;
 
+  console.log("TEST");
+
   const secretDefinitions = getPasswordManagerData({
     ...passwordManagerParams,
     type: "secrets",
