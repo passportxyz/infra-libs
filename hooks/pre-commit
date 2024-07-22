@@ -2,4 +2,4 @@
 
 echo "Running pre-commit hook"
 echo "Building..."
-npx tsc && git add dist && echo "Successful build"
+npm run build && git add dist && echo "Successful build"
