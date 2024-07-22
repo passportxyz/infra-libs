@@ -1,6 +1,16 @@
 #!/bin/sh
 
 echo "Running pre-commit hook"
-echo "Building..."
-rm -r dist
-npm run build && git add dist && echo "Successful build"
+
+if [ -z $(git ls-files --exclude-standard --others) ] && git diff-files --quiet; then
+  # Working directory clean
+  echo "Building..."
+  rm -r dist > /dev/null 2>&1
+  npm run build && git add dist && echo "Successful build"
+else 
+  # Working directory dirty
+  echo "The repo contains changes that are not included in this commit. Please add or stash them before commiting."
+  echo "Commit aborted."
+  exit 1
+fi
+
