@@ -18,7 +18,6 @@ const aws = require("@pulumi/aws");
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
     const { targetSecretArn } = params, passwordManagerParams = __rest(params, ["targetSecretArn"]);
-    console.log("TEST");
     const secretDefinitions = getPasswordManagerData(Object.assign(Object.assign({}, passwordManagerParams), { type: "secrets" }));
     const secretString = JSON.stringify(secretDefinitions.reduce((acc, { name, value }) => {
         acc[name] = value;

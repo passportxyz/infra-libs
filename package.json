@@ -2,7 +2,8 @@
   "name": "infra-libs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc"
   },
@@ -18,3 +19,4 @@
     "@pulumi/pulumi": "^3.125.0"
   }
 }
+

@@ -1,1 +1,1 @@
-export declare function greet(name: string): string;
+export * as secrets from "./secrets";
