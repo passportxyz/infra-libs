@@ -13,6 +13,7 @@ type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
 
 type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
   targetSecretArn: string;
+  extraSecretDefinitions?: EnvironmentVar[];
 };
 
 type EnvironmentVar = { name: string; value: string };
@@ -23,15 +24,21 @@ type SecretRef = { name: string; valueFrom: string };
 export const syncSecretsAndGetRefs = (
   params: SyncSecretsAndGetRefsParams
 ): SecretRef[] => {
-  const { targetSecretArn, ...passwordManagerParams } = params;
+  const { targetSecretArn, extraSecretDefinitions, ...passwordManagerParams } =
+    params;
 
   const secretDefinitions = getPasswordManagerData({
     ...passwordManagerParams,
     type: "secrets",
   });
 
+  const allSecretDefinitions = [
+    ...(extraSecretDefinitions || []),
+    ...secretDefinitions,
+  ].sort(sortByName);
+
   const secretString = JSON.stringify(
-    secretDefinitions.reduce((acc, { name, value }) => {
+    allSecretDefinitions.reduce((acc, { name, value }) => {
       acc[name] = value;
       return acc;
     }, {} as Record<string, string>)
@@ -46,7 +53,7 @@ export const syncSecretsAndGetRefs = (
     }
   );
 
-  return secretDefinitions.map(({ name }) => ({
+  return allSecretDefinitions.map(({ name }) => ({
     name,
     valueFrom: `${targetSecretArn}:${name}::`,
   }));

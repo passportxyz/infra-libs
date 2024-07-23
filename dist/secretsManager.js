@@ -17,9 +17,13 @@ const aws = require("@pulumi/aws");
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
-    const { targetSecretArn } = params, passwordManagerParams = __rest(params, ["targetSecretArn"]);
+    const { targetSecretArn, extraSecretDefinitions } = params, passwordManagerParams = __rest(params, ["targetSecretArn", "extraSecretDefinitions"]);
     const secretDefinitions = getPasswordManagerData(Object.assign(Object.assign({}, passwordManagerParams), { type: "secrets" }));
-    const secretString = JSON.stringify(secretDefinitions.reduce((acc, { name, value }) => {
+    const allSecretDefinitions = [
+        ...(extraSecretDefinitions || []),
+        ...secretDefinitions,
+    ].sort(exports.sortByName);
+    const secretString = JSON.stringify(allSecretDefinitions.reduce((acc, { name, value }) => {
         acc[name] = value;
         return acc;
     }, {}));
@@ -28,7 +32,7 @@ const syncSecretsAndGetRefs = (params) => {
         secretString,
         versionStages: ["AWSCURRENT"],
     });
-    return secretDefinitions.map(({ name }) => ({
+    return allSecretDefinitions.map(({ name }) => ({
         name,
         valueFrom: `${targetSecretArn}:${name}::`,
     }));

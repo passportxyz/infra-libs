@@ -8,6 +8,7 @@ type GetPasswordManagerDataParams = {
 type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
 type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
     targetSecretArn: string;
+    extraSecretDefinitions?: EnvironmentVar[];
 };
 type EnvironmentVar = {
     name: string;
