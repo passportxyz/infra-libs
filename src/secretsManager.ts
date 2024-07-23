@@ -18,7 +18,9 @@ type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
 };
 
 type EnvironmentVar = { name: string; value: string | pulumi.Output<any> };
-type SecretRef = { name: string; valueFrom: string };
+export type SecretRef = { name: string; valueFrom: string };
+
+const syncedTargetSecretArns: string[] = [];
 
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
@@ -27,6 +29,8 @@ export const syncSecretsAndGetRefs = (
 ): SecretRef[] => {
   const { targetSecretArn, extraSecretDefinitions, ...passwordManagerParams } =
     params;
+
+  ensureSecretsOnlySyncedOnce(targetSecretArn);
 
   const secretDefinitions = getPasswordManagerData({
     ...passwordManagerParams,
@@ -98,6 +102,13 @@ const getPasswordManagerData = ({
   return fields
     .map(({ label, value }) => ({ name: label, value }))
     .sort(sortByName);
+};
+
+const ensureSecretsOnlySyncedOnce = (targetSecretArn: string) => {
+  if (syncedTargetSecretArns.includes(targetSecretArn)) {
+    throw new Error(`Secrets for ${targetSecretArn} have already been synced`);
+  }
+  syncedTargetSecretArns.push(targetSecretArn);
 };
 
 // Pulumi sorts alphabetically by name, so we want to match so that

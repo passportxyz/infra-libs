@@ -15,7 +15,7 @@ type EnvironmentVar = {
     name: string;
     value: string | pulumi.Output<any>;
 };
-type SecretRef = {
+export type SecretRef = {
     name: string;
     valueFrom: string;
 };
