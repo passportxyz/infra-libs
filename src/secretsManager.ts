@@ -1,5 +1,6 @@
 import { Item, item, validateCli } from "@1password/op-js";
 import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
 
 type GetPasswordManagerDataParams = {
   vault: string;
@@ -16,7 +17,7 @@ type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
   extraSecretDefinitions?: EnvironmentVar[];
 };
 
-type EnvironmentVar = { name: string; value: string };
+type EnvironmentVar = { name: string; value: string | pulumi.Output<string> };
 type SecretRef = { name: string; valueFrom: string };
 
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
@@ -41,7 +42,7 @@ export const syncSecretsAndGetRefs = (
     allSecretDefinitions.reduce((acc, { name, value }) => {
       acc[name] = value;
       return acc;
-    }, {} as Record<string, string>)
+    }, {} as Record<string, string | pulumi.Output<string>>)
   );
 
   new aws.secretsmanager.SecretVersion(

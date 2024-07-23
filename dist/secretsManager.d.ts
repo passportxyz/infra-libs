@@ -1,3 +1,4 @@
+import * as pulumi from "@pulumi/pulumi";
 type GetPasswordManagerDataParams = {
     vault: string;
     repo: string;
@@ -12,7 +13,7 @@ type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
 };
 type EnvironmentVar = {
     name: string;
-    value: string;
+    value: string | pulumi.Output<string>;
 };
 type SecretRef = {
     name: string;
