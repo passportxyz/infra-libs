@@ -13,7 +13,7 @@ type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
 };
 type EnvironmentVar = {
     name: string;
-    value: string | pulumi.Output<string>;
+    value: string | pulumi.Output<any>;
 };
 type SecretRef = {
     name: string;

@@ -17,7 +17,7 @@ type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
   extraSecretDefinitions?: EnvironmentVar[];
 };
 
-type EnvironmentVar = { name: string; value: string | pulumi.Output<string> };
+type EnvironmentVar = { name: string; value: string | pulumi.Output<any> };
 type SecretRef = { name: string; valueFrom: string };
 
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
@@ -38,11 +38,11 @@ export const syncSecretsAndGetRefs = (
     ...secretDefinitions,
   ].sort(sortByName);
 
-  const secretString = JSON.stringify(
+  const secretString = pulumi.jsonStringify(
     allSecretDefinitions.reduce((acc, { name, value }) => {
       acc[name] = value;
       return acc;
-    }, {} as Record<string, string | pulumi.Output<string>>)
+    }, {} as Record<string, string | pulumi.Output<any>>)
   );
 
   new aws.secretsmanager.SecretVersion(

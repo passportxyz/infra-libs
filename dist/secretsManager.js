@@ -14,6 +14,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sortByName = exports.getEnvironmentVars = exports.syncSecretsAndGetRefs = void 0;
 const op_js_1 = require("@1password/op-js");
 const aws = require("@pulumi/aws");
+const pulumi = require("@pulumi/pulumi");
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
@@ -23,7 +24,7 @@ const syncSecretsAndGetRefs = (params) => {
         ...(extraSecretDefinitions || []),
         ...secretDefinitions,
     ].sort(exports.sortByName);
-    const secretString = JSON.stringify(allSecretDefinitions.reduce((acc, { name, value }) => {
+    const secretString = pulumi.jsonStringify(allSecretDefinitions.reduce((acc, { name, value }) => {
         acc[name] = value;
         return acc;
     }, {}));
