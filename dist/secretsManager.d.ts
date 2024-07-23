@@ -11,7 +11,7 @@ type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
     targetSecretArn: string;
     extraSecretDefinitions?: EnvironmentVar[];
 };
-type EnvironmentVar = {
+export type EnvironmentVar = {
     name: string;
     value: string | pulumi.Output<any>;
 };
