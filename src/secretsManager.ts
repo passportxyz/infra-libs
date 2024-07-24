@@ -33,7 +33,7 @@ export const syncSecretsAndGetRefs = (
   const { targetSecret, extraSecretDefinitions, ...passwordManagerParams } =
     params;
 
-  ensureSecretsOnlySyncedOnce(targetSecret);
+  ensureSecretOnlySyncedOnce(targetSecret);
 
   const secretDefinitions = getPasswordManagerData({
     ...passwordManagerParams,
@@ -52,15 +52,10 @@ export const syncSecretsAndGetRefs = (
     }, {} as Record<string, string | pulumi.Output<any>>)
   );
 
-  targetSecret.arn.apply((targetSecretArn) => {
-    new aws.secretsmanager.SecretVersion(
-      `${targetSecretArn.split(":").slice(-1)}-secret-version`,
-      {
-        secretId: targetSecretArn,
-        secretString,
-        versionStages: ["AWSCURRENT"],
-      }
-    );
+  new aws.secretsmanager.SecretVersion("bla", {
+    secretId: targetSecret.arn,
+    secretString,
+    versionStages: ["AWSCURRENT"],
   });
 
   return targetSecret.arn.apply((targetSecretArn) =>
@@ -111,7 +106,7 @@ const getPasswordManagerData = ({
     .sort(sortByName);
 };
 
-const ensureSecretsOnlySyncedOnce = (
+const ensureSecretOnlySyncedOnce = (
   targetSecret: aws.secretsmanager.Secret
 ) => {
   targetSecret.arn.apply((targetSecretArn) => {

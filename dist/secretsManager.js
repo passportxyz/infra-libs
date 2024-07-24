@@ -20,7 +20,7 @@ const syncedTargetSecretArns = [];
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
     const { targetSecret, extraSecretDefinitions } = params, passwordManagerParams = __rest(params, ["targetSecret", "extraSecretDefinitions"]);
-    ensureSecretsOnlySyncedOnce(targetSecret);
+    ensureSecretOnlySyncedOnce(targetSecret);
     const secretDefinitions = getPasswordManagerData(Object.assign(Object.assign({}, passwordManagerParams), { type: "secrets" }));
     const allSecretDefinitions = [
         ...(extraSecretDefinitions || []),
@@ -30,12 +30,10 @@ const syncSecretsAndGetRefs = (params) => {
         acc[name] = value;
         return acc;
     }, {}));
-    targetSecret.arn.apply((targetSecretArn) => {
-        new aws.secretsmanager.SecretVersion(`${targetSecretArn.split(":").slice(-1)}-secret-version`, {
-            secretId: targetSecretArn,
-            secretString,
-            versionStages: ["AWSCURRENT"],
-        });
+    new aws.secretsmanager.SecretVersion("bla", {
+        secretId: targetSecret.arn,
+        secretString,
+        versionStages: ["AWSCURRENT"],
     });
     return targetSecret.arn.apply((targetSecretArn) => allSecretDefinitions.map(({ name }) => ({
         name,
@@ -64,7 +62,7 @@ const getPasswordManagerData = ({ vault, repo, env, type, section, }) => {
         .map(({ label, value }) => ({ name: label, value }))
         .sort(exports.sortByName);
 };
-const ensureSecretsOnlySyncedOnce = (targetSecret) => {
+const ensureSecretOnlySyncedOnce = (targetSecret) => {
     targetSecret.arn.apply((targetSecretArn) => {
         if (syncedTargetSecretArns.includes(targetSecretArn)) {
             throw new Error(`Secrets for ${targetSecretArn} have already been synced`);
