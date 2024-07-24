@@ -15,12 +15,10 @@ exports.sortByName = exports.getEnvironmentVars = exports.syncSecretsAndGetRefs 
 const op_js_1 = require("@1password/op-js");
 const aws = require("@pulumi/aws");
 const pulumi = require("@pulumi/pulumi");
-const syncedTargetSecretArns = [];
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
     const { targetSecret, secretVersionName, extraSecretDefinitions } = params, passwordManagerParams = __rest(params, ["targetSecret", "secretVersionName", "extraSecretDefinitions"]);
-    ensureSecretOnlySyncedOnce(targetSecret);
     const secretDefinitions = getPasswordManagerData(Object.assign(Object.assign({}, passwordManagerParams), { type: "secrets" }));
     const allSecretDefinitions = [
         ...(extraSecretDefinitions || []),
@@ -61,14 +59,6 @@ const getPasswordManagerData = ({ vault, repo, env, type, section, }) => {
     return fields
         .map(({ label, value }) => ({ name: label, value }))
         .sort(exports.sortByName);
-};
-const ensureSecretOnlySyncedOnce = (targetSecret) => {
-    targetSecret.arn.apply((targetSecretArn) => {
-        if (syncedTargetSecretArns.includes(targetSecretArn)) {
-            throw new Error(`Secrets for ${targetSecretArn} have already been synced`);
-        }
-        syncedTargetSecretArns.push(targetSecretArn);
-    });
 };
 // Pulumi sorts alphabetically by name, so we want to match so that
 // the diff doesn't falsely show differences because of the order.
