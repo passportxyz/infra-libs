@@ -13,7 +13,7 @@ type GetPasswordManagerDataParams = {
 type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
 
 type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
-  targetSecretArn: string;
+  targetSecret: aws.secretsmanager.Secret;
   extraSecretDefinitions?: EnvironmentVar[];
 };
 
@@ -29,11 +29,11 @@ const syncedTargetSecretArns: string[] = [];
 // object in AWS Secrets Manager and return the references to those secret values
 export const syncSecretsAndGetRefs = (
   params: SyncSecretsAndGetRefsParams
-): SecretRef[] => {
-  const { targetSecretArn, extraSecretDefinitions, ...passwordManagerParams } =
+): pulumi.Output<SecretRef[]> => {
+  const { targetSecret, extraSecretDefinitions, ...passwordManagerParams } =
     params;
 
-  ensureSecretsOnlySyncedOnce(targetSecretArn);
+  ensureSecretsOnlySyncedOnce(targetSecret);
 
   const secretDefinitions = getPasswordManagerData({
     ...passwordManagerParams,
@@ -52,19 +52,23 @@ export const syncSecretsAndGetRefs = (
     }, {} as Record<string, string | pulumi.Output<any>>)
   );
 
-  new aws.secretsmanager.SecretVersion(
-    `${targetSecretArn.split(":").slice(-1)}-secret-version`,
-    {
-      secretId: targetSecretArn,
-      secretString,
-      versionStages: ["AWSCURRENT"],
-    }
-  );
+  targetSecret.arn.apply((targetSecretArn) => {
+    new aws.secretsmanager.SecretVersion(
+      `${targetSecretArn.split(":").slice(-1)}-secret-version`,
+      {
+        secretId: targetSecretArn,
+        secretString,
+        versionStages: ["AWSCURRENT"],
+      }
+    );
+  });
 
-  return allSecretDefinitions.map(({ name }) => ({
-    name,
-    valueFrom: `${targetSecretArn}:${name}::`,
-  }));
+  return targetSecret.arn.apply((targetSecretArn) =>
+    allSecretDefinitions.map(({ name }) => ({
+      name,
+      valueFrom: `${targetSecretArn}:${name}::`,
+    }))
+  );
 };
 
 // Given a 1P definition, return the environment variables
@@ -107,11 +111,17 @@ const getPasswordManagerData = ({
     .sort(sortByName);
 };
 
-const ensureSecretsOnlySyncedOnce = (targetSecretArn: string) => {
-  if (syncedTargetSecretArns.includes(targetSecretArn)) {
-    throw new Error(`Secrets for ${targetSecretArn} have already been synced`);
-  }
-  syncedTargetSecretArns.push(targetSecretArn);
+const ensureSecretsOnlySyncedOnce = (
+  targetSecret: aws.secretsmanager.Secret
+) => {
+  targetSecret.arn.apply((targetSecretArn) => {
+    if (syncedTargetSecretArns.includes(targetSecretArn)) {
+      throw new Error(
+        `Secrets for ${targetSecretArn} have already been synced`
+      );
+    }
+    syncedTargetSecretArns.push(targetSecretArn);
+  });
 };
 
 // Pulumi sorts alphabetically by name, so we want to match so that

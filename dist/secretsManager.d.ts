@@ -1,3 +1,4 @@
+import * as aws from "@pulumi/aws";
 import * as pulumi from "@pulumi/pulumi";
 type GetPasswordManagerDataParams = {
     vault: string;
@@ -8,7 +9,7 @@ type GetPasswordManagerDataParams = {
 };
 type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
 type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
-    targetSecretArn: string;
+    targetSecret: aws.secretsmanager.Secret;
     extraSecretDefinitions?: EnvironmentVar[];
 };
 export type EnvironmentVar = {
@@ -19,7 +20,7 @@ export type SecretRef = {
     name: string;
     valueFrom: string;
 };
-export declare const syncSecretsAndGetRefs: (params: SyncSecretsAndGetRefsParams) => SecretRef[];
+export declare const syncSecretsAndGetRefs: (params: SyncSecretsAndGetRefsParams) => pulumi.Output<SecretRef[]>;
 export declare const getEnvironmentVars: (params: GetEnvironmentVarsParams) => EnvironmentVar[];
 export declare const sortByName: (a: {
     name: string;

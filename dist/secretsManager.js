@@ -19,8 +19,8 @@ const syncedTargetSecretArns = [];
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
-    const { targetSecretArn, extraSecretDefinitions } = params, passwordManagerParams = __rest(params, ["targetSecretArn", "extraSecretDefinitions"]);
-    ensureSecretsOnlySyncedOnce(targetSecretArn);
+    const { targetSecret, extraSecretDefinitions } = params, passwordManagerParams = __rest(params, ["targetSecret", "extraSecretDefinitions"]);
+    ensureSecretsOnlySyncedOnce(targetSecret);
     const secretDefinitions = getPasswordManagerData(Object.assign(Object.assign({}, passwordManagerParams), { type: "secrets" }));
     const allSecretDefinitions = [
         ...(extraSecretDefinitions || []),
@@ -30,15 +30,17 @@ const syncSecretsAndGetRefs = (params) => {
         acc[name] = value;
         return acc;
     }, {}));
-    new aws.secretsmanager.SecretVersion(`${targetSecretArn.split(":").slice(-1)}-secret-version`, {
-        secretId: targetSecretArn,
-        secretString,
-        versionStages: ["AWSCURRENT"],
+    targetSecret.arn.apply((targetSecretArn) => {
+        new aws.secretsmanager.SecretVersion(`${targetSecretArn.split(":").slice(-1)}-secret-version`, {
+            secretId: targetSecretArn,
+            secretString,
+            versionStages: ["AWSCURRENT"],
+        });
     });
-    return allSecretDefinitions.map(({ name }) => ({
+    return targetSecret.arn.apply((targetSecretArn) => allSecretDefinitions.map(({ name }) => ({
         name,
         valueFrom: `${targetSecretArn}:${name}::`,
-    }));
+    })));
 };
 exports.syncSecretsAndGetRefs = syncSecretsAndGetRefs;
 // Given a 1P definition, return the environment variables
@@ -62,11 +64,13 @@ const getPasswordManagerData = ({ vault, repo, env, type, section, }) => {
         .map(({ label, value }) => ({ name: label, value }))
         .sort(exports.sortByName);
 };
-const ensureSecretsOnlySyncedOnce = (targetSecretArn) => {
-    if (syncedTargetSecretArns.includes(targetSecretArn)) {
-        throw new Error(`Secrets for ${targetSecretArn} have already been synced`);
-    }
-    syncedTargetSecretArns.push(targetSecretArn);
+const ensureSecretsOnlySyncedOnce = (targetSecret) => {
+    targetSecret.arn.apply((targetSecretArn) => {
+        if (syncedTargetSecretArns.includes(targetSecretArn)) {
+            throw new Error(`Secrets for ${targetSecretArn} have already been synced`);
+        }
+        syncedTargetSecretArns.push(targetSecretArn);
+    });
 };
 // Pulumi sorts alphabetically by name, so we want to match so that
 // the diff doesn't falsely show differences because of the order.
