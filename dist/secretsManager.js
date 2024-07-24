@@ -14,24 +14,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.sortByName = exports.getEnvironmentVars = exports.syncSecretsAndGetRefs = void 0;
 const op_js_1 = require("@1password/op-js");
 const aws = require("@pulumi/aws");
+const pulumi = require("@pulumi/pulumi");
+const syncedTargetSecretArns = [];
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
-    const { targetSecretArn } = params, passwordManagerParams = __rest(params, ["targetSecretArn"]);
+    const { targetSecret, secretVersionName, extraSecretDefinitions } = params, passwordManagerParams = __rest(params, ["targetSecret", "secretVersionName", "extraSecretDefinitions"]);
+    ensureSecretOnlySyncedOnce(targetSecret);
     const secretDefinitions = getPasswordManagerData(Object.assign(Object.assign({}, passwordManagerParams), { type: "secrets" }));
-    const secretString = JSON.stringify(secretDefinitions.reduce((acc, { name, value }) => {
+    const allSecretDefinitions = [
+        ...(extraSecretDefinitions || []),
+        ...secretDefinitions,
+    ].sort(exports.sortByName);
+    const secretString = pulumi.jsonStringify(allSecretDefinitions.reduce((acc, { name, value }) => {
         acc[name] = value;
         return acc;
     }, {}));
-    new aws.secretsmanager.SecretVersion(`${targetSecretArn.split(":").slice(-1)}-secret-version`, {
-        secretId: targetSecretArn,
+    new aws.secretsmanager.SecretVersion(secretVersionName, {
+        secretId: targetSecret.arn,
         secretString,
         versionStages: ["AWSCURRENT"],
     });
-    return secretDefinitions.map(({ name }) => ({
+    return targetSecret.arn.apply((targetSecretArn) => allSecretDefinitions.map(({ name }) => ({
         name,
         valueFrom: `${targetSecretArn}:${name}::`,
-    }));
+    })));
 };
 exports.syncSecretsAndGetRefs = syncSecretsAndGetRefs;
 // Given a 1P definition, return the environment variables
@@ -54,6 +61,14 @@ const getPasswordManagerData = ({ vault, repo, env, type, section, }) => {
     return fields
         .map(({ label, value }) => ({ name: label, value }))
         .sort(exports.sortByName);
+};
+const ensureSecretOnlySyncedOnce = (targetSecret) => {
+    targetSecret.arn.apply((targetSecretArn) => {
+        if (syncedTargetSecretArns.includes(targetSecretArn)) {
+            throw new Error(`Secrets for ${targetSecretArn} have already been synced, you can only sync a particular secret once per run.`);
+        }
+        syncedTargetSecretArns.push(targetSecretArn);
+    });
 };
 // Pulumi sorts alphabetically by name, so we want to match so that
 // the diff doesn't falsely show differences because of the order.

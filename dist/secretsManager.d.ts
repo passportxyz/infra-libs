@@ -1,3 +1,5 @@
+import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
 type GetPasswordManagerDataParams = {
     vault: string;
     repo: string;
@@ -7,17 +9,19 @@ type GetPasswordManagerDataParams = {
 };
 type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
 type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
-    targetSecretArn: string;
+    secretVersionName: string;
+    targetSecret: aws.secretsmanager.Secret;
+    extraSecretDefinitions?: EnvironmentVar[];
 };
-type EnvironmentVar = {
+export type EnvironmentVar = {
     name: string;
-    value: string;
+    value: string | pulumi.Output<any>;
 };
-type SecretRef = {
+export type SecretRef = {
     name: string;
     valueFrom: string;
 };
-export declare const syncSecretsAndGetRefs: (params: SyncSecretsAndGetRefsParams) => SecretRef[];
+export declare const syncSecretsAndGetRefs: (params: SyncSecretsAndGetRefsParams) => pulumi.Output<SecretRef[]>;
 export declare const getEnvironmentVars: (params: GetEnvironmentVarsParams) => EnvironmentVar[];
 export declare const sortByName: (a: {
     name: string;

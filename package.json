@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@1password/op-js": "^0.1.13",
-    "@pulumi/aws": "^6.45.0"
+    "@pulumi/aws": "^6.45.0",
+    "@pulumi/pulumi": "^3.126.0"
   }
 }
