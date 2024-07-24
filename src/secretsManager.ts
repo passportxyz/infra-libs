@@ -117,7 +117,7 @@ const ensureSecretOnlySyncedOnce = (
   targetSecret.arn.apply((targetSecretArn) => {
     if (syncedTargetSecretArns.includes(targetSecretArn)) {
       throw new Error(
-        `Secrets for ${targetSecretArn} have already been synced`
+        `Secrets for ${targetSecretArn} have already been synced, you can only sync a particular secret once per run.`
       );
     }
     syncedTargetSecretArns.push(targetSecretArn);
