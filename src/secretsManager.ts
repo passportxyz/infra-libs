@@ -13,6 +13,7 @@ type GetPasswordManagerDataParams = {
 type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
 
 type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
+  secretVersionName: string;
   targetSecret: aws.secretsmanager.Secret;
   extraSecretDefinitions?: EnvironmentVar[];
 };
@@ -30,8 +31,12 @@ const syncedTargetSecretArns: string[] = [];
 export const syncSecretsAndGetRefs = (
   params: SyncSecretsAndGetRefsParams
 ): pulumi.Output<SecretRef[]> => {
-  const { targetSecret, extraSecretDefinitions, ...passwordManagerParams } =
-    params;
+  const {
+    targetSecret,
+    secretVersionName,
+    extraSecretDefinitions,
+    ...passwordManagerParams
+  } = params;
 
   ensureSecretOnlySyncedOnce(targetSecret);
 
@@ -52,7 +57,7 @@ export const syncSecretsAndGetRefs = (
     }, {} as Record<string, string | pulumi.Output<any>>)
   );
 
-  new aws.secretsmanager.SecretVersion("bla", {
+  new aws.secretsmanager.SecretVersion(secretVersionName, {
     secretId: targetSecret.arn,
     secretString,
     versionStages: ["AWSCURRENT"],

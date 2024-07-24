@@ -19,7 +19,7 @@ const syncedTargetSecretArns = [];
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
-    const { targetSecret, extraSecretDefinitions } = params, passwordManagerParams = __rest(params, ["targetSecret", "extraSecretDefinitions"]);
+    const { targetSecret, secretVersionName, extraSecretDefinitions } = params, passwordManagerParams = __rest(params, ["targetSecret", "secretVersionName", "extraSecretDefinitions"]);
     ensureSecretOnlySyncedOnce(targetSecret);
     const secretDefinitions = getPasswordManagerData(Object.assign(Object.assign({}, passwordManagerParams), { type: "secrets" }));
     const allSecretDefinitions = [
@@ -30,7 +30,7 @@ const syncSecretsAndGetRefs = (params) => {
         acc[name] = value;
         return acc;
     }, {}));
-    new aws.secretsmanager.SecretVersion("bla", {
+    new aws.secretsmanager.SecretVersion(secretVersionName, {
         secretId: targetSecret.arn,
         secretString,
         versionStages: ["AWSCURRENT"],

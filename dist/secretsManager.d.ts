@@ -9,6 +9,7 @@ type GetPasswordManagerDataParams = {
 };
 type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
 type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
+    secretVersionName: string;
     targetSecret: aws.secretsmanager.Secret;
     extraSecretDefinitions?: EnvironmentVar[];
 };
