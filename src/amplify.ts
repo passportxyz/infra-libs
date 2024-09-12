@@ -3,7 +3,7 @@ import * as aws from "@pulumi/aws";
 import * as cloudflare from "@pulumi/cloudflare";
 import * as std from "@pulumi/std";
 
-interface AmplifyAppConfig {
+export interface AmplifyAppConfig {
   name: string;
   githubUrl: string;
   githubAccessToken?: string;
