@@ -14,9 +14,15 @@ importers:
       '@pulumi/aws':
         specifier: ^6.45.0
         version: 6.45.0(typescript@5.5.3)
+      '@pulumi/cloudflare':
+        specifier: ^5.38.0
+        version: 5.38.0(typescript@5.5.3)
       '@pulumi/pulumi':
         specifier: ^3.126.0
         version: 3.126.0(typescript@5.5.3)
+      '@pulumi/std':
+        specifier: ^1.6.2
+        version: 1.7.3(typescript@5.5.3)
     devDependencies:
       typescript:
         specifier: ^5.5.3
@@ -217,6 +223,9 @@ packages:
   '@pulumi/aws@6.45.0':
     resolution: {integrity: sha512-EhRlYs0Ig53nHRNv3NSgb5TPpJuDmA+N0HCUkPhODUT9n1KTahQnoLbMc+hbvJKPngx6hgye7fagARPO3kWPVw==}
 
+  '@pulumi/cloudflare@5.38.0':
+    resolution: {integrity: sha512-dClqItv2ybF2FTgXDI09eKVfVo6J6GKJukeH9Wel9YNoyaZRdEyb1nsY98H0T/T8wQZwug3VcgSlJIZazHnP8w==}
+
   '@pulumi/pulumi@3.126.0':
     resolution: {integrity: sha512-NPYGHeavLh8Y2quOcx0KLMAM0WWES5RoJ9iywp953iL7hSqv1W77/GjvYuhj5jdm2O9Ty2AjYs74zpfeYzkOoQ==}
     engines: {node: '>=18'}
@@ -231,6 +240,9 @@ packages:
 
   '@pulumi/query@0.3.0':
     resolution: {integrity: sha512-xfo+yLRM2zVjVEA4p23IjQWzyWl1ZhWOGobsBqRpIarzLvwNH/RAGaoehdxlhx4X92302DrpdIFgTICMN4P38w==}
+
+  '@pulumi/std@1.7.3':
+    resolution: {integrity: sha512-rQnwBjlSQtem7gvfIlAgFwpvC9HXxDuYeu99WifcN+QY+uTRyyq3IMHak7dVgPQmVr/GEHqkugZeAV6cBwL/lQ==}
 
   '@sigstore/bundle@2.3.2':
     resolution: {integrity: sha512-wueKWDk70QixNLB363yHc2D2ItTgYiMTdPwK8D9dKQMR3ZQ0c35IxP5xnwQ8cNLoCgCRcHf14kE+CLIvNX1zmA==}
@@ -1386,6 +1398,15 @@ snapshots:
       - ts-node
       - typescript
 
+  '@pulumi/cloudflare@5.38.0(typescript@5.5.3)':
+    dependencies:
+      '@pulumi/pulumi': 3.126.0(typescript@5.5.3)
+    transitivePeerDependencies:
+      - bluebird
+      - supports-color
+      - ts-node
+      - typescript
+
   '@pulumi/pulumi@3.126.0(typescript@5.5.3)':
     dependencies:
       '@grpc/grpc-js': 1.11.1
@@ -1425,6 +1446,15 @@ snapshots:
       - supports-color
 
   '@pulumi/query@0.3.0': {}
+
+  '@pulumi/std@1.7.3(typescript@5.5.3)':
+    dependencies:
+      '@pulumi/pulumi': 3.126.0(typescript@5.5.3)
+    transitivePeerDependencies:
+      - bluebird
+      - supports-color
+      - ts-node
+      - typescript
 
   '@sigstore/bundle@2.3.2':
     dependencies:
