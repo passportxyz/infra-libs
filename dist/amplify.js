@@ -12,11 +12,10 @@ applications:
       phases:
         preBuild:
           commands:
-            ${config.nodeVersion ? `- nvm use ${config.nodeVersion}` : ''}
-            ${config.preBuildCommands ? config.preBuildCommands.join('\n            ') : ''}
+            - ${config.preBuildCommand || ''}
         build:
           commands:
-            ${config.buildCommands.join('\n            ')}
+            - ${config.buildCommand}
       artifacts:
         baseDirectory: ${config.artifactsBaseDirectory}
         files:

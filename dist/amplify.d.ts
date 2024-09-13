@@ -21,8 +21,8 @@ export interface AmplifyAppConfig {
     basicAuthUsername?: string;
     basicAuthPassword?: string;
     platform?: "WEB" | "WEB_COMPUTE";
-    buildCommands: string[];
-    preBuildCommands?: string[];
+    buildCommand: string;
+    preBuildCommand?: string;
     artifactsBaseDirectory: string;
     monorepoAppRoot?: string;
     nodeVersion?: string;

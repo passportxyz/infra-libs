@@ -24,8 +24,8 @@ export interface AmplifyAppConfig {
   basicAuthUsername?: string;
   basicAuthPassword?: string;
   platform?: "WEB" | "WEB_COMPUTE";
-  buildCommands: string[];
-  preBuildCommands?: string[];
+  buildCommand: string;
+  preBuildCommand?: string;
   artifactsBaseDirectory: string;
   monorepoAppRoot?: string;
   nodeVersion?: string;
@@ -35,17 +35,16 @@ export interface AmplifyAppConfig {
 export function createAmplifyApp(config: AmplifyAppConfig) {
   const name = `${config.prefix}.${config.domainName}`;
 
-  const buildSpec = `version: 1
+const buildSpec = `version: 1
 applications:
   - frontend:
       phases:
         preBuild:
           commands:
-            ${config.nodeVersion ? `- nvm use ${config.nodeVersion}` : ''}
-            ${config.preBuildCommands ? config.preBuildCommands.join('\n            ') : ''}
+            - ${config.preBuildCommand || ''}
         build:
           commands:
-            ${config.buildCommands.join('\n            ')}
+            - ${config.buildCommand}
       artifacts:
         baseDirectory: ${config.artifactsBaseDirectory}
         files:
