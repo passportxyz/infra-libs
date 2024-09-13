@@ -32,7 +32,7 @@ applications:
         oauthToken: config.githubAccessToken,
         platform: config.platform || "WEB_COMPUTE",
         buildSpec: buildSpec,
-        customRules: [
+        customRules: config.customRules || [
             {
                 source: "/<*>",
                 status: "404",

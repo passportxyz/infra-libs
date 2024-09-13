@@ -3,6 +3,12 @@ import * as aws from "@pulumi/aws";
 import * as cloudflare from "@pulumi/cloudflare";
 import * as std from "@pulumi/std";
 
+type CustomRule = {
+  source: string;
+  status: string;
+  target: string;
+};
+
 export interface AmplifyAppConfig {
   name: string;
   githubUrl: string;
@@ -23,6 +29,7 @@ export interface AmplifyAppConfig {
   artifactsBaseDirectory: string;
   monorepoAppRoot?: string;
   nodeVersion?: string;
+  customRules?: CustomRule[];
 }
 
 export function createAmplifyApp(config: AmplifyAppConfig) {
@@ -49,13 +56,13 @@ applications:
     appRoot: ${config.monorepoAppRoot || 'app'}
 `;
 
-  const amplifyApp = new aws.amplify.App(name, {
+const amplifyApp = new aws.amplify.App(name, {
     name: name,
     repository: config.githubUrl,
     oauthToken: config.githubAccessToken,
     platform: config.platform || "WEB_COMPUTE",
     buildSpec: buildSpec,
-    customRules: [
+    customRules: config.customRules || [
       {
         source: "/<*>",
         status: "404",

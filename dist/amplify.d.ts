@@ -1,4 +1,9 @@
 import * as pulumi from "@pulumi/pulumi";
+type CustomRule = {
+    source: string;
+    status: string;
+    target: string;
+};
 export interface AmplifyAppConfig {
     name: string;
     githubUrl: string;
@@ -21,8 +26,10 @@ export interface AmplifyAppConfig {
     artifactsBaseDirectory: string;
     monorepoAppRoot?: string;
     nodeVersion?: string;
+    customRules?: CustomRule[];
 }
 export declare function createAmplifyApp(config: AmplifyAppConfig): {
     app: import("@pulumi/aws/amplify/app").App;
     webHook: import("@pulumi/aws/amplify/webhook").Webhook;
 };
+export {};
