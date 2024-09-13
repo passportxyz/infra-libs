@@ -51,9 +51,6 @@ applications:
     const branch = new aws.amplify.Branch(`${name}-${config.branchName}`, {
         appId: amplifyApp.id,
         branchName: config.branchName,
-        displayName: config.branchName,
-        stage: config.branchName.toUpperCase(),
-        ttl: "5",
     });
     const webHook = new aws.amplify.Webhook(`${name}-${config.branchName}`, {
         appId: amplifyApp.id,
