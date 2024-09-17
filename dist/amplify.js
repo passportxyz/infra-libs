@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAmplifyApp = createAmplifyApp;
 const aws = require("@pulumi/aws");
 const cloudflare = require("@pulumi/cloudflare");
-const std = require("@pulumi/std");
 function createAmplifyApp(config) {
     const name = `${config.prefix}.${config.domainName}`;
     const buildSpec = `version: 1
@@ -39,12 +38,6 @@ applications:
             },
         ],
         environmentVariables: Object.assign({ AMPLIFY_DIFF_DEPLOY: "false", AMPLIFY_MONOREPO_APP_ROOT: config.monorepoAppRoot || "app" }, config.environmentVariables),
-        enableBasicAuth: config.enableBasicAuth || false,
-        basicAuthCredentials: config.enableBasicAuth
-            ? std.base64encode({
-                input: `${config.basicAuthUsername}:${config.basicAuthPassword}`,
-            }).then((invoke) => invoke.result)
-            : undefined,
         tags: config.tags,
     });
     const branch = new aws.amplify.Branch(`${name}-${config.branchName}`, {

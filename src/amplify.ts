@@ -20,9 +20,6 @@ export interface AmplifyAppConfig {
   branchName: string;
   environmentVariables: Record<string, string | pulumi.Output<any>>;
   tags: { [key: string]: string };
-  enableBasicAuth?: boolean;
-  basicAuthUsername?: string;
-  basicAuthPassword?: string;
   platform?: "WEB" | "WEB_COMPUTE";
   buildCommand: string;
   preBuildCommand?: string;
@@ -73,12 +70,6 @@ const amplifyApp = new aws.amplify.App(name, {
       AMPLIFY_MONOREPO_APP_ROOT: config.monorepoAppRoot || "app",
       ...config.environmentVariables,
     },
-    enableBasicAuth: config.enableBasicAuth || false,
-    basicAuthCredentials: config.enableBasicAuth
-      ? std.base64encode({
-          input: `${config.basicAuthUsername}:${config.basicAuthPassword}`,
-        }).then((invoke) => invoke.result)
-      : undefined,
     tags: config.tags,
   });
 

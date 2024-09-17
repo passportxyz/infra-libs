@@ -17,9 +17,6 @@ export interface AmplifyAppConfig {
     tags: {
         [key: string]: string;
     };
-    enableBasicAuth?: boolean;
-    basicAuthUsername?: string;
-    basicAuthPassword?: string;
     platform?: "WEB" | "WEB_COMPUTE";
     buildCommand: string;
     preBuildCommand?: string;
