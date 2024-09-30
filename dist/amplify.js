@@ -57,6 +57,10 @@ applications:
                 branchName: branch.branchName,
                 prefix: config.prefix,
             },
+            {
+                branchName: branch.branchName,
+                prefix: config.additional_prefix || "",
+            },
         ],
     });
     if (config.cloudflareDomain && config.cloudflareZoneId) {
@@ -68,6 +72,10 @@ applications:
                 {
                     branchName: branch.branchName,
                     prefix: config.prefix,
+                },
+                {
+                    branchName: branch.branchName,
+                    prefix: config.additional_prefix || "",
                 },
             ],
         });
