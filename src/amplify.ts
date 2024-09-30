@@ -1,7 +1,6 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as cloudflare from "@pulumi/cloudflare";
-import * as std from "@pulumi/std";
 
 type CustomRule = {
   source: string;
@@ -16,6 +15,7 @@ export interface AmplifyAppConfig {
   domainName: string;
   cloudflareDomain?: string;
   cloudflareZoneId?: string;
+  additional_prefix?: string; // additional prefix for cloudflare
   prefix: string;
   branchName: string;
   environmentVariables: Record<string, string | pulumi.Output<any>>;
@@ -92,6 +92,10 @@ const amplifyApp = new aws.amplify.App(name, {
         branchName: branch.branchName,
         prefix: config.prefix,
       },
+      {
+        branchName: branch.branchName,
+        prefix: config.additional_prefix || "",
+      },
     ],
   });
 
@@ -106,6 +110,10 @@ const amplifyApp = new aws.amplify.App(name, {
           {
             branchName: branch.branchName,
             prefix: config.prefix,
+          },
+          {
+            branchName: branch.branchName,
+            prefix: config.additional_prefix || "",
           },
         ],
       }

@@ -11,6 +11,7 @@ export interface AmplifyAppConfig {
     domainName: string;
     cloudflareDomain?: string;
     cloudflareZoneId?: string;
+    additional_prefix?: string;
     prefix: string;
     branchName: string;
     environmentVariables: Record<string, string | pulumi.Output<any>>;

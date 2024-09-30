@@ -57,6 +57,10 @@ applications:
                 branchName: branch.branchName,
                 prefix: config.prefix,
             },
+            {
+                branchName: branch.branchName,
+                prefix: config.additional_prefix || "",
+            },
         ],
     });
     if (config.cloudflareDomain && config.cloudflareZoneId) {
@@ -68,6 +72,10 @@ applications:
                 {
                     branchName: branch.branchName,
                     prefix: config.prefix,
+                },
+                {
+                    branchName: branch.branchName,
+                    prefix: config.additional_prefix || "",
                 },
             ],
         });
@@ -87,6 +95,7 @@ applications:
         });
         cloudFlareDomainAssociation.subDomains.apply((subDomains) => {
             subDomains.forEach((subD) => {
+                console.log("subD", subD);
                 const domainDetails = subD.dnsRecord.split(" ");
                 new cloudflare.Record(`${domainDetails[0]}-record`, {
                     name: domainDetails[0],
