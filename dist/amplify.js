@@ -95,7 +95,6 @@ applications:
         });
         cloudFlareDomainAssociation.subDomains.apply((subDomains) => {
             subDomains.forEach((subD) => {
-                console.log("subD", subD);
                 const domainDetails = subD.dnsRecord.split(" ");
                 new cloudflare.Record(`${domainDetails[0]}-record`, {
                     name: domainDetails[0],
