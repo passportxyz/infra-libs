@@ -49,35 +49,29 @@ applications:
         branchName: config.branchName,
         description: `trigger build from branch ${config.branchName}`,
     });
+    const subDomains = [
+        {
+            branchName: branch.branchName,
+            prefix: config.prefix,
+        }
+    ];
+    if (config.additional_prefix) {
+        subDomains.push({
+            branchName: branch.branchName,
+            prefix: config.additional_prefix,
+        });
+    }
     const domainAssociation = new aws.amplify.DomainAssociation(name, {
         appId: amplifyApp.id,
         domainName: config.domainName,
-        subDomains: [
-            {
-                branchName: branch.branchName,
-                prefix: config.prefix,
-            },
-            {
-                branchName: branch.branchName,
-                prefix: config.additional_prefix || "",
-            },
-        ],
+        subDomains: subDomains
     });
     if (config.cloudflareDomain && config.cloudflareZoneId) {
         const cloudFlareDomainAssociation = new aws.amplify.DomainAssociation(`cloudflare-${name}`, {
             appId: amplifyApp.id,
             domainName: config.cloudflareDomain,
             waitForVerification: false,
-            subDomains: [
-                {
-                    branchName: branch.branchName,
-                    prefix: config.prefix,
-                },
-                {
-                    branchName: branch.branchName,
-                    prefix: config.additional_prefix || "",
-                },
-            ],
+            subDomains: subDomains,
         });
         const domainCert = cloudFlareDomainAssociation.certificateVerificationDnsRecord;
         domainCert.apply((cert) => {
