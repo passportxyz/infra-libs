@@ -11,11 +11,21 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sortByName = exports.getEnvironmentVars = exports.syncSecretsAndGetRefs = void 0;
+exports.sortByName = exports.getEnvironmentVars = exports.syncSecretsAndGetRefs = exports.setDynamicSecrets = void 0;
 const op_js_1 = require("@1password/op-js");
 const aws = require("@pulumi/aws");
 const pulumi = require("@pulumi/pulumi");
 const syncedTargetSecretArns = [];
+// If you don't have any 1P secrets to sync, just use this
+const setDynamicSecrets = ({ targetSecret, secretVersionName, secretDefinitions, }) => {
+    ensureSecretOnlySyncedOnce(targetSecret);
+    return setSecrets({
+        targetSecret,
+        secretVersionName,
+        secretDefinitions: secretDefinitions.sort(exports.sortByName),
+    });
+};
+exports.setDynamicSecrets = setDynamicSecrets;
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
 const syncSecretsAndGetRefs = (params) => {
@@ -26,19 +36,11 @@ const syncSecretsAndGetRefs = (params) => {
         ...(extraSecretDefinitions || []),
         ...secretDefinitions,
     ].sort(exports.sortByName);
-    const secretString = pulumi.jsonStringify(allSecretDefinitions.reduce((acc, { name, value }) => {
-        acc[name] = value;
-        return acc;
-    }, {}));
-    new aws.secretsmanager.SecretVersion(secretVersionName, {
-        secretId: targetSecret.arn,
-        secretString,
-        versionStages: ["AWSCURRENT"],
+    return setSecrets({
+        targetSecret,
+        secretVersionName,
+        secretDefinitions: allSecretDefinitions,
     });
-    return targetSecret.arn.apply((targetSecretArn) => allSecretDefinitions.map(({ name }) => ({
-        name,
-        valueFrom: `${targetSecretArn}:${name}::`,
-    })));
 };
 exports.syncSecretsAndGetRefs = syncSecretsAndGetRefs;
 // Given a 1P definition, return the environment variables
@@ -61,6 +63,21 @@ const getPasswordManagerData = ({ vault, repo, env, type, section, }) => {
     return fields
         .map(({ label, value }) => ({ name: label, value }))
         .sort(exports.sortByName);
+};
+const setSecrets = ({ targetSecret, secretVersionName, secretDefinitions, }) => {
+    const secretString = pulumi.jsonStringify(secretDefinitions.reduce((acc, { name, value }) => {
+        acc[name] = value;
+        return acc;
+    }, {}));
+    new aws.secretsmanager.SecretVersion(secretVersionName, {
+        secretId: targetSecret.arn,
+        secretString,
+        versionStages: ["AWSCURRENT"],
+    });
+    return targetSecret.arn.apply((targetSecretArn) => secretDefinitions.sort(exports.sortByName).map(({ name }) => ({
+        name,
+        valueFrom: `${targetSecretArn}:${name}::`,
+    })));
 };
 const ensureSecretOnlySyncedOnce = (targetSecret) => {
     targetSecret.arn.apply((targetSecretArn) => {

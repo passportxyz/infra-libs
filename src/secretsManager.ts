@@ -12,10 +12,18 @@ type GetPasswordManagerDataParams = {
 
 type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
 
-type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
+type SecretIdentifier = {
   secretVersionName: string;
   targetSecret: aws.secretsmanager.Secret;
-  extraSecretDefinitions?: EnvironmentVar[];
+};
+
+type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams &
+  SecretIdentifier & {
+    extraSecretDefinitions?: EnvironmentVar[];
+  };
+
+type SetSecretsParams = SecretIdentifier & {
+  secretDefinitions: EnvironmentVar[];
 };
 
 export type EnvironmentVar = {
@@ -26,10 +34,25 @@ export type SecretRef = { name: string; valueFrom: string };
 
 const syncedTargetSecretArns: string[] = [];
 
+// If you don't have any 1P secrets to sync, just use this
+export const setDynamicSecrets = ({
+  targetSecret,
+  secretVersionName,
+  secretDefinitions,
+}: SetSecretsParams): pulumi.Output<SecretRef[]> => {
+  ensureSecretOnlySyncedOnce(targetSecret);
+
+  return setSecrets({
+    targetSecret,
+    secretVersionName,
+    secretDefinitions: secretDefinitions.sort(sortByName),
+  });
+};
+
 // Given a 1P definition and a target secret ARN, sync the secrets to the target secret
 // object in AWS Secrets Manager and return the references to those secret values
 export const syncSecretsAndGetRefs = (
-  params: SyncSecretsAndGetRefsParams
+  params: SyncSecretsAndGetRefsParams,
 ): pulumi.Output<SecretRef[]> => {
   const {
     targetSecret,
@@ -50,30 +73,16 @@ export const syncSecretsAndGetRefs = (
     ...secretDefinitions,
   ].sort(sortByName);
 
-  const secretString = pulumi.jsonStringify(
-    allSecretDefinitions.reduce((acc, { name, value }) => {
-      acc[name] = value;
-      return acc;
-    }, {} as Record<string, string | pulumi.Output<any>>)
-  );
-
-  new aws.secretsmanager.SecretVersion(secretVersionName, {
-    secretId: targetSecret.arn,
-    secretString,
-    versionStages: ["AWSCURRENT"],
+  return setSecrets({
+    targetSecret,
+    secretVersionName,
+    secretDefinitions: allSecretDefinitions,
   });
-
-  return targetSecret.arn.apply((targetSecretArn) =>
-    allSecretDefinitions.map(({ name }) => ({
-      name,
-      valueFrom: `${targetSecretArn}:${name}::`,
-    }))
-  );
 };
 
 // Given a 1P definition, return the environment variables
 export const getEnvironmentVars = (
-  params: GetEnvironmentVarsParams
+  params: GetEnvironmentVarsParams,
 ): EnvironmentVar[] => {
   return getPasswordManagerData({ ...params, type: "env" });
 };
@@ -102,7 +111,7 @@ const getPasswordManagerData = ({
     throw new Error(
       `No data found for ${vault}/${repo}-${env}-${type}${
         section ? `/${section}` : ""
-      }`
+      }`,
     );
   }
 
@@ -111,13 +120,42 @@ const getPasswordManagerData = ({
     .sort(sortByName);
 };
 
+const setSecrets = ({
+  targetSecret,
+  secretVersionName,
+  secretDefinitions,
+}: SetSecretsParams) => {
+  const secretString = pulumi.jsonStringify(
+    secretDefinitions.reduce(
+      (acc, { name, value }) => {
+        acc[name] = value;
+        return acc;
+      },
+      {} as Record<string, string | pulumi.Output<any>>,
+    ),
+  );
+
+  new aws.secretsmanager.SecretVersion(secretVersionName, {
+    secretId: targetSecret.arn,
+    secretString,
+    versionStages: ["AWSCURRENT"],
+  });
+
+  return targetSecret.arn.apply((targetSecretArn) =>
+    secretDefinitions.sort(sortByName).map(({ name }) => ({
+      name,
+      valueFrom: `${targetSecretArn}:${name}::`,
+    })),
+  );
+};
+
 const ensureSecretOnlySyncedOnce = (
-  targetSecret: aws.secretsmanager.Secret
+  targetSecret: aws.secretsmanager.Secret,
 ) => {
   targetSecret.arn.apply((targetSecretArn) => {
     if (syncedTargetSecretArns.includes(targetSecretArn)) {
       throw new Error(
-        `Secrets for ${targetSecretArn} have already been synced, you can only sync a particular secret once per run.`
+        `Secrets for ${targetSecretArn} have already been synced, you can only sync a particular secret once per run.`,
       );
     }
     syncedTargetSecretArns.push(targetSecretArn);

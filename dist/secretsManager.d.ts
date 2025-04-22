@@ -8,10 +8,15 @@ type GetPasswordManagerDataParams = {
     type: "secrets" | "env";
 };
 type GetEnvironmentVarsParams = Omit<GetPasswordManagerDataParams, "type">;
-type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & {
+type SecretIdentifier = {
     secretVersionName: string;
     targetSecret: aws.secretsmanager.Secret;
+};
+type SyncSecretsAndGetRefsParams = GetEnvironmentVarsParams & SecretIdentifier & {
     extraSecretDefinitions?: EnvironmentVar[];
+};
+type SetSecretsParams = SecretIdentifier & {
+    secretDefinitions: EnvironmentVar[];
 };
 export type EnvironmentVar = {
     name: string;
@@ -21,6 +26,7 @@ export type SecretRef = {
     name: string;
     valueFrom: string;
 };
+export declare const setDynamicSecrets: ({ targetSecret, secretVersionName, secretDefinitions, }: SetSecretsParams) => pulumi.Output<SecretRef[]>;
 export declare const syncSecretsAndGetRefs: (params: SyncSecretsAndGetRefsParams) => pulumi.Output<SecretRef[]>;
 export declare const getEnvironmentVars: (params: GetEnvironmentVarsParams) => EnvironmentVar[];
 export declare const sortByName: (a: {
